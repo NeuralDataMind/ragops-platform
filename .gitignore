@@ -1,0 +1,86 @@
+
+# Environment / Secrets
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+
+# Virtual Environments
+.venv/
+venv/
+env/
+ENV/
+
+# Testing / Coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+
+# Build / Packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+pip-wheel-metadata/
+
+# Docker / Local Runtime
+*.log
+logs/
+
+# Uploaded / Generated Files
+uploads/
+data/
+reports/
+artifacts/
+tmp/
+temp/
+
+# Model / Vector / Cache Artifacts
+models/
+checkpoints/
+*.pt
+*.pth
+*.onnx
+*.bin
+*.safetensors
+*.faiss
+*.index
+
+# Jupyter / Notebooks
+.ipynb_checkpoints/
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS Files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Node / Frontend if added later
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Local Database Files
+*.sqlite
+*.sqlite3
+*.db
+
+# Qdrant / Postgres local mounts if used later
+qdrant_storage/
+postgres_data/
+redis_data/
