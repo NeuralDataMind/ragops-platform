@@ -5,6 +5,10 @@ from fastapi import APIRouter, HTTPException, status, File, UploadFile
 
 from app.core.config import settings
 
+from app.services.ingestion import extract_document
+from app.services.chunking import chunk_extracted_document
+from app.services.chunk_service import create_chunks
+
 from app.schemas.document import (
     DocumentCreate,
     DocumentListResponse,
@@ -117,3 +121,65 @@ async def patch_document_status(document_id: UUID, new_status: str):
         )
 
     return document
+
+@router.post("/{document_id}/chunk")
+async def chunk_document(document_id: UUID):
+    document = await get_document_by_id(document_id)
+
+    if document is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Document not found",
+        )
+
+    storage_path = document.get("storage_path")
+
+    if not storage_path:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Document has no storage path",
+        )
+
+    try:
+        await update_document_status(document_id, "chunking")
+
+        extracted_document = extract_document(
+            document_id=document_id,
+            file_path=storage_path,
+        )
+
+        if not extracted_document.blocks:
+            await update_document_status(document_id, "chunking_failed")
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="No extractable text found in document",
+            )
+
+        chunk_candidates = chunk_extracted_document(extracted_document)
+
+        if not chunk_candidates:
+            await update_document_status(document_id, "chunking_failed")
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="No chunks created from document",
+            )
+
+        created_chunks = await create_chunks(chunk_candidates)
+
+        await update_document_status(document_id, "chunked")
+
+        return {
+            "document_id": document_id,
+            "chunks_created": len(created_chunks),
+            "status": "chunked",
+        }
+
+    except HTTPException:
+        raise
+
+    except Exception as exc:
+        await update_document_status(document_id, "chunking_failed")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Chunking failed: {repr(exc)}",
+        )
