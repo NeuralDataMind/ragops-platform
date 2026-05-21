@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     LLM_MODEL: str = "gemini-1.5-flash"
     
     EMBEDDING_PROVIDER: str = "gemini"
-    EMBEDDING_MODEL: str = "gemini-embedding-2-preview"
+    EMBEDDING_MODEL: str = "models/gemini-embedding-001"
     EMBEDDING_DIMENSION: int = 3072
 
     POSTGRES_HOST: str = "postgres"

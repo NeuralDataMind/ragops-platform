@@ -28,6 +28,8 @@ def get_embedding_client() -> GoogleGenerativeAIEmbeddings:
     return GoogleGenerativeAIEmbeddings(
         model=settings.EMBEDDING_MODEL,
         google_api_key=settings.GOOGLE_API_KEY,
+        task_type="RETRIEVAL_DOCUMENT",
+        output_dimensionality=settings.EMBEDDING_DIMENSION,
     )
 
 
@@ -37,24 +39,49 @@ def get_embedding_client() -> GoogleGenerativeAIEmbeddings:
     retry=retry_if_exception_type(Exception),
     reraise=True,
 )
-async def embed_text_batch(texts: list[str]) -> list[list[float]]:
-    
-    if not texts:
-        return []
+async def embed_single_text(text: str) -> list[float]:
+    clean_text = text.strip()
+
+    if not clean_text:
+        raise EmbeddingError("Cannot embed empty text")
 
     client = get_embedding_client()
 
     try:
-        embeddings = await client.aembed_documents(texts)
+        embedding = await client.aembed_query(clean_text)
     except Exception as exc:
-        raise EmbeddingError(f"Embedding batch failed: {repr(exc)}") from exc
+        raise EmbeddingError(
+            f"Embedding single text failed: {repr(exc)}"
+        ) from exc
 
-    for embedding in embeddings:
-        if len(embedding) != settings.EMBEDDING_DIMENSION:
-            raise EmbeddingError(
-                f"Embedding dimension mismatch. "
-                f"Expected {settings.EMBEDDING_DIMENSION}, got {len(embedding)}"
-            )
+    if len(embedding) != settings.EMBEDDING_DIMENSION:
+        raise EmbeddingError(
+            f"Embedding dimension mismatch. "
+            f"Expected {settings.EMBEDDING_DIMENSION}, got {len(embedding)}"
+        )
+
+    return embedding
+
+
+async def embed_text_batch(texts: list[str]) -> list[list[float]]:
+    """
+    Embeds texts one by one.
+
+    We intentionally avoid aembed_documents() for now because LangChain's
+    batch path is failing with gemini-embedding-2-preview in this environment.
+    """
+
+    if not texts:
+        return []
+
+    embeddings: list[list[float]] = []
+
+    for text in texts:
+        vector = await embed_single_text(text)
+        embeddings.append(vector)
+
+        # Small throttle to reduce rate-limit pressure.
+        await asyncio.sleep(0.2)
 
     return embeddings
 
@@ -64,7 +91,6 @@ async def embed_chunks_in_batches(
     batch_size: int = 16,
     delay_seconds: float = 0.5,
 ) -> list[dict[str, Any]]:
-
     embedded_chunks: list[dict[str, Any]] = []
 
     for start in range(0, len(chunks), batch_size):

@@ -2,6 +2,9 @@ from typing import Any
 
 from qdrant_client import AsyncQdrantClient
 from qdrant_client.models import (
+    Filter,
+    FieldCondition,
+    MatchValue,
     Distance,
     PointStruct,
     VectorParams,
@@ -74,3 +77,43 @@ async def upsert_embedded_chunks(
     )
 
     return len(points)
+
+async def search_similar_chunks(
+    query_vector: list[float],
+    top_k: int = 5,
+    index_version: str = "v1",
+    document_id: str | None = None,
+) -> list[dict]:
+    collection_name = get_collection_name(index_version)
+
+    query_filter = None
+
+    if document_id:
+        query_filter = Filter(
+            must=[
+                FieldCondition(
+                    key="document_id",
+                    match=MatchValue(value=document_id),
+                )
+            ]
+        )
+
+    results = await qdrant_client.search(
+        collection_name=collection_name,
+        query_vector=query_vector,
+        query_filter=query_filter,
+        limit=top_k,
+        with_payload=True,
+        with_vectors=False,
+    )
+
+    return [
+        {
+            "chunk_id": point.payload["chunk_id"],
+            "document_id": point.payload["document_id"],
+            "page_number": point.payload.get("page_number"),
+            "chunk_index": point.payload.get("chunk_index"),
+            "score": point.score,
+        }
+        for point in results
+    ]

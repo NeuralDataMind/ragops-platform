@@ -117,3 +117,28 @@ async def update_chunks_index_metadata(
         )
 
     return int(result.split()[-1])
+
+async def get_chunks_by_ids(chunk_ids: list[UUID]) -> list[dict]:
+    if not chunk_ids:
+        return []
+
+    pool = await get_postgres_pool()
+
+    query = """
+    SELECT
+        id,
+        document_id,
+        chunk_text,
+        page_number,
+        chunk_index,
+        embedding_model,
+        embedding_dimension,
+        index_version
+    FROM chunks
+    WHERE id = ANY($1::uuid[]);
+    """
+
+    async with pool.acquire() as conn:
+        rows = await conn.fetch(query, chunk_ids)
+
+    return [dict(row) for row in rows]
