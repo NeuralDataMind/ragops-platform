@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     LLM_MODEL: str = "gemini-1.5-flash"
     
     EMBEDDING_PROVIDER: str = "gemini"
-    EMBEDDING_MODEL: str = "gemini-embedding-2"
+    EMBEDDING_MODEL: str = "gemini-embedding-2-preview"
     EMBEDDING_DIMENSION: int = 3072
 
     POSTGRES_HOST: str = "postgres"
@@ -22,6 +22,7 @@ class Settings(BaseSettings):
 
     QDRANT_HOST: str = "qdrant"
     QDRANT_PORT: int = 6333
+    QDRANT_COLLECTION_PREFIX: str = "rag_index"
 
     REDIS_HOST: str = "redis"
     REDIS_PORT: int = 6379

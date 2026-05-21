@@ -8,6 +8,7 @@ from app.core.config import settings
 from app.services.ingestion import extract_document
 from app.services.chunking import chunk_extracted_document
 from app.services.chunk_service import create_chunks
+from app.services.index_service import index_document_chunks 
 
 from app.schemas.document import (
     DocumentCreate,
@@ -182,4 +183,30 @@ async def chunk_document(document_id: UUID):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Chunking failed: {repr(exc)}",
+        )
+    
+@router.post("/{document_id}/index")
+async def index_document(document_id: UUID):
+    document = await get_document_by_id(document_id)
+
+    if document is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Document not found",
+        )
+
+    if document["status"] not in ["chunked", "indexing_failed"]:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Document must be chunked before indexing. Current status: {document['status']}",
+        )
+
+    try:
+        result = await index_document_chunks(document_id=document_id)
+        return result
+
+    except Exception as exc:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Indexing failed: {repr(exc)}",
         )

@@ -1,3 +1,5 @@
+import re
+
 from pathlib import Path
 from uuid import UUID
 
@@ -23,6 +25,20 @@ class ExtractedDocument(BaseModel):
     blocks: list[ExtractedBlock]
 
 
+def normalize_extracted_text(text: str) -> str:
+    text = text.replace("\r\n", "\n").replace("\r", "\n")
+
+    # Collapse 3+ newlines to paragraph breaks
+    text = re.sub(r"\n{3,}", "\n\n", text)
+
+    # Convert single newlines into spaces
+    text = re.sub(r"(?<!\n)\n(?!\n)", " ", text)
+
+    # Collapse repeated spaces/tabs
+    text = re.sub(r"[ \t]+", " ", text)
+
+    return text.strip()
+
 def extract_document(document_id: UUID, file_path: str) -> ExtractedDocument:
     path = Path(file_path)
 
@@ -45,7 +61,7 @@ def _extract_text_file(
     path: Path,
     file_type: str,
 ) -> ExtractedDocument:
-    text = path.read_text(encoding="utf-8").strip()
+    text = normalize_extracted_text(path.read_text(encoding="utf-8"))
 
     blocks: list[ExtractedBlock] = []
 
@@ -82,7 +98,7 @@ def _extract_pdf_file(
     blocks: list[ExtractedBlock] = []
 
     for block_index, page_doc in enumerate(pages):
-        text = page_doc.page_content.strip()
+        text = normalize_extracted_text(page_doc.page_content)
 
         if not text:
             continue
@@ -110,3 +126,4 @@ def _extract_pdf_file(
         source_path=str(path),
         blocks=blocks,
     )
+
