@@ -2,7 +2,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, HTTPException
 
-from app.services.retrieval import retrieve_relevant_chunks
+from app.services.retrieval import hybrid_retrieve_relevant_chunks
 
 router = APIRouter()
 
@@ -14,7 +14,7 @@ async def retrieve(
     document_id: UUID | None = None,
 ):
     try:
-        chunks = await retrieve_relevant_chunks(
+        chunks = await hybrid_retrieve_relevant_chunks(
             query=query,
             top_k=top_k,
             document_id=document_id,

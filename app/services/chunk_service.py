@@ -142,3 +142,144 @@ async def get_chunks_by_ids(chunk_ids: list[UUID]) -> list[dict]:
         rows = await conn.fetch(query, chunk_ids)
 
     return [dict(row) for row in rows]
+
+import re
+from uuid import UUID
+
+from app.db.postgres import get_postgres_pool
+
+
+def extract_sparse_terms(query_text: str) -> list[str]:
+    stopwords = {
+        "the", "a", "an", "and", "or", "of", "to", "in", "for",
+        "is", "are", "what", "which", "about", "me"
+    }
+
+    raw_terms = re.findall(r"[a-zA-Z0-9]+", query_text.lower())
+
+    terms = [
+        term
+        for term in raw_terms
+        if term not in stopwords and len(term) > 1
+    ]
+
+    lowered = query_text.lower()
+
+    if "first" in lowered and ("5" in lowered or "five" in lowered):
+        terms.extend(["warmup", "0–5", "0-5", "beginning"])
+
+    if "project" in lowered or "walkthrough" in lowered:
+        terms.extend(["project", "walkthrough", "github", "repo"])
+
+    if "decision" in lowered or "deep" in lowered:
+        terms.extend(["decision", "deep", "dive", "tradeoffs"])
+
+    # remove duplicates while preserving order
+    seen = set()
+    unique_terms = []
+
+    for term in terms:
+        if term not in seen:
+            unique_terms.append(term)
+            seen.add(term)
+
+    return unique_terms
+
+
+async def keyword_search_chunks(
+    query_text: str,
+    top_k: int = 5,
+    document_id: UUID | None = None,
+) -> list[dict]:
+    pool = await get_postgres_pool()
+
+    terms = extract_sparse_terms(query_text)
+    patterns = [f"%{term}%" for term in terms]
+
+    if not patterns:
+        return []
+
+    params = [query_text]
+
+    if document_id:
+        params.append(document_id)
+
+    token_start_index = len(params) + 1
+
+    params.extend(patterns)
+
+    limit_index = len(params) + 1
+    params.append(top_k)
+
+    token_score_parts = [
+        f"CASE WHEN chunk_text ILIKE ${token_start_index + i} THEN 1.0 ELSE 0.0 END"
+        for i in range(len(patterns))
+    ]
+
+    token_where_parts = [
+        f"chunk_text ILIKE ${token_start_index + i}"
+        for i in range(len(patterns))
+    ]
+
+    token_score_sql = " + ".join(token_score_parts)
+    token_where_sql = " OR ".join(token_where_parts)
+
+    if document_id:
+        query = f"""
+        SELECT
+            id,
+            document_id,
+            chunk_text,
+            page_number,
+            chunk_index,
+            embedding_model,
+            embedding_dimension,
+            index_version,
+            (
+                ts_rank_cd(
+                    to_tsvector('english', chunk_text),
+                    websearch_to_tsquery('english', $1)
+                )
+                +
+                ({token_score_sql})
+            ) AS sparse_score
+        FROM chunks
+        WHERE document_id = $2
+          AND (
+              to_tsvector('english', chunk_text) @@ websearch_to_tsquery('english', $1)
+              OR {token_where_sql}
+          )
+        ORDER BY sparse_score DESC
+        LIMIT ${limit_index};
+        """
+    else:
+        query = f"""
+        SELECT
+            id,
+            document_id,
+            chunk_text,
+            page_number,
+            chunk_index,
+            embedding_model,
+            embedding_dimension,
+            index_version,
+            (
+                ts_rank_cd(
+                    to_tsvector('english', chunk_text),
+                    websearch_to_tsquery('english', $1)
+                )
+                +
+                ({token_score_sql})
+            ) AS sparse_score
+        FROM chunks
+        WHERE
+            to_tsvector('english', chunk_text) @@ websearch_to_tsquery('english', $1)
+            OR {token_where_sql}
+        ORDER BY sparse_score DESC
+        LIMIT ${limit_index};
+        """
+
+    async with pool.acquire() as conn:
+        rows = await conn.fetch(query, *params)
+
+    return [dict(row) for row in rows]
