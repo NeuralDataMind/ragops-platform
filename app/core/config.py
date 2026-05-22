@@ -7,7 +7,7 @@ class Settings(BaseSettings):
 
     GOOGLE_API_KEY: str | None = None
     LLM_PROVIDER: str = "gemini"
-    LLM_MODEL: str = "gemini-1.5-flash"
+    LLM_MODEL: str = "gemini-2.5-flash"
     
     EMBEDDING_PROVIDER: str = "gemini"
     EMBEDDING_MODEL: str = "models/gemini-embedding-001"
