@@ -1,0 +1,218 @@
+{
+  "summary": {
+    "top_k": 3,
+    "question_count": 5,
+    "hit_at_k": 1.0,
+    "precision_at_k": 0.4666666666666667,
+    "mrr": 0.9
+  },
+  "results": [
+    {
+      "id": "q1",
+      "question": "What happens in the first 5 minutes of the interview?",
+      "expected_chunk_indexes": [
+        1
+      ],
+      "retrieved_chunk_indexes": [
+        1,
+        6,
+        5
+      ],
+      "hit_at_k": 1,
+      "precision_at_k": 0.3333333333333333,
+      "mrr": 1.0,
+      "top_results": [
+        {
+          "chunk_id": "ddb6d255-1b89-4a1d-9e26-132afca5bb82",
+          "chunk_index": 1,
+          "page_number": 1,
+          "dense_score": 1.0,
+          "sparse_score": 1.0,
+          "hybrid_score": 1.0
+        },
+        {
+          "chunk_id": "d35b9c93-32f7-4e47-b6b1-1554cca4c744",
+          "chunk_index": 6,
+          "page_number": 2,
+          "dense_score": 0.999847223231726,
+          "sparse_score": 0.0,
+          "hybrid_score": 0.649900695100622
+        },
+        {
+          "chunk_id": "e4da540d-8e84-42b1-8c6c-23ddeeb66ec7",
+          "chunk_index": 5,
+          "page_number": 2,
+          "dense_score": 0.9823970615219071,
+          "sparse_score": 0.0,
+          "hybrid_score": 0.6385580899892396
+        }
+      ]
+    },
+    {
+      "id": "q2",
+      "question": "What should I prepare before joining the call?",
+      "expected_chunk_indexes": [
+        0
+      ],
+      "retrieved_chunk_indexes": [
+        0,
+        1,
+        6
+      ],
+      "hit_at_k": 1,
+      "precision_at_k": 0.3333333333333333,
+      "mrr": 1.0,
+      "top_results": [
+        {
+          "chunk_id": "94d48532-5945-4ed7-95dd-e9812e63a404",
+          "chunk_index": 0,
+          "page_number": 1,
+          "dense_score": 1.0,
+          "sparse_score": 1.0,
+          "hybrid_score": 1.0
+        },
+        {
+          "chunk_id": "ddb6d255-1b89-4a1d-9e26-132afca5bb82",
+          "chunk_index": 1,
+          "page_number": 1,
+          "dense_score": 0.900550974652684,
+          "sparse_score": 0.0,
+          "hybrid_score": 0.5853581335242446
+        },
+        {
+          "chunk_id": "d35b9c93-32f7-4e47-b6b1-1554cca4c744",
+          "chunk_index": 6,
+          "page_number": 2,
+          "dense_score": 0.8860251923148544,
+          "sparse_score": 0.0,
+          "hybrid_score": 0.5759163750046554
+        }
+      ]
+    },
+    {
+      "id": "q3",
+      "question": "What happens during the project walkthrough?",
+      "expected_chunk_indexes": [
+        1,
+        2
+      ],
+      "retrieved_chunk_indexes": [
+        1,
+        2,
+        3
+      ],
+      "hit_at_k": 1,
+      "precision_at_k": 0.6666666666666666,
+      "mrr": 1.0,
+      "top_results": [
+        {
+          "chunk_id": "ddb6d255-1b89-4a1d-9e26-132afca5bb82",
+          "chunk_index": 1,
+          "page_number": 1,
+          "dense_score": 1.0,
+          "sparse_score": 1.0,
+          "hybrid_score": 1.0
+        },
+        {
+          "chunk_id": "b9621545-baa5-43b9-acf3-7690670f3000",
+          "chunk_index": 2,
+          "page_number": 1,
+          "dense_score": 0.9601782345842933,
+          "sparse_score": 0.5,
+          "hybrid_score": 0.7991158524797906
+        },
+        {
+          "chunk_id": "25d9c1b2-9722-48f5-8066-86c476586638",
+          "chunk_index": 3,
+          "page_number": 2,
+          "dense_score": 0.9424296931811178,
+          "sparse_score": 0.0,
+          "hybrid_score": 0.6125793005677266
+        }
+      ]
+    },
+    {
+      "id": "q4",
+      "question": "What happens during the decision deep dive?",
+      "expected_chunk_indexes": [
+        3,
+        4
+      ],
+      "retrieved_chunk_indexes": [
+        3,
+        4,
+        6
+      ],
+      "hit_at_k": 1,
+      "precision_at_k": 0.6666666666666666,
+      "mrr": 1.0,
+      "top_results": [
+        {
+          "chunk_id": "25d9c1b2-9722-48f5-8066-86c476586638",
+          "chunk_index": 3,
+          "page_number": 2,
+          "dense_score": 1.0,
+          "sparse_score": 1.0,
+          "hybrid_score": 1.0
+        },
+        {
+          "chunk_id": "6045e1ff-166f-439a-995c-a4aa7f5feeac",
+          "chunk_index": 4,
+          "page_number": 2,
+          "dense_score": 0.9153516499305239,
+          "sparse_score": 1.0,
+          "hybrid_score": 0.9449785724548405
+        },
+        {
+          "chunk_id": "d35b9c93-32f7-4e47-b6b1-1554cca4c744",
+          "chunk_index": 6,
+          "page_number": 2,
+          "dense_score": 0.9159452153661608,
+          "sparse_score": 0.0,
+          "hybrid_score": 0.5953643899880046
+        }
+      ]
+    },
+    {
+      "id": "q5",
+      "question": "What should I ask at the end of the interview?",
+      "expected_chunk_indexes": [
+        6
+      ],
+      "retrieved_chunk_indexes": [
+        3,
+        6,
+        1
+      ],
+      "hit_at_k": 1,
+      "precision_at_k": 0.3333333333333333,
+      "mrr": 0.5,
+      "top_results": [
+        {
+          "chunk_id": "25d9c1b2-9722-48f5-8066-86c476586638",
+          "chunk_index": 3,
+          "page_number": 2,
+          "dense_score": 0.9259335935278109,
+          "sparse_score": 1.0,
+          "hybrid_score": 0.9518568357930771
+        },
+        {
+          "chunk_id": "d35b9c93-32f7-4e47-b6b1-1554cca4c744",
+          "chunk_index": 6,
+          "page_number": 2,
+          "dense_score": 1.0,
+          "sparse_score": 0.6666666666666666,
+          "hybrid_score": 0.8833333333333333
+        },
+        {
+          "chunk_id": "ddb6d255-1b89-4a1d-9e26-132afca5bb82",
+          "chunk_index": 1,
+          "page_number": 1,
+          "dense_score": 0.9408605143419259,
+          "sparse_score": 0.0,
+          "hybrid_score": 0.6115593343222518
+        }
+      ]
+    }
+  ]
+}

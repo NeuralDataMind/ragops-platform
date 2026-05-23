@@ -2,9 +2,15 @@ import re
 from typing import Any
 
 
-CHUNK_ID_PATTERN = re.compile(
-    r"\[chunk_id:\s*([0-9a-fA-F-]{36})\]"
-)
+CHUNK_ID_PATTERNS = [
+    # Official format:
+    # [chunk_id: ddb6d255-1b89-4a1d-9e26-132afca5bb82]
+    re.compile(r"\[chunk_id:\s*([0-9a-fA-F-]{36})\]"),
+
+    # Fallback format sometimes produced by LLM:
+    # [ddb6d255-1b89-4a1d-9e26-132afca5bb82]
+    re.compile(r"\[([0-9a-fA-F-]{36})\]"),
+]
 
 
 class CitationVerificationError(Exception):
@@ -12,7 +18,18 @@ class CitationVerificationError(Exception):
 
 
 def extract_cited_chunk_ids(answer: str) -> list[str]:
-    matches = CHUNK_ID_PATTERN.findall(answer)
+    """
+    Extract cited chunk IDs from an answer.
+
+    Supports:
+    - [chunk_id: <uuid>]
+    - [<uuid>]
+    """
+
+    matches: list[str] = []
+
+    for pattern in CHUNK_ID_PATTERNS:
+        matches.extend(pattern.findall(answer))
 
     seen = set()
     cited_ids: list[str] = []
@@ -27,10 +44,37 @@ def extract_cited_chunk_ids(answer: str) -> list[str]:
     return cited_ids
 
 
+def normalize_citation_format(answer: str) -> str:
+    """
+    Normalize plain UUID citations into the official format.
+
+    Converts:
+    [ddb6d255-1b89-4a1d-9e26-132afca5bb82]
+
+    Into:
+    [chunk_id: ddb6d255-1b89-4a1d-9e26-132afca5bb82]
+    """
+
+    return re.sub(
+        r"\[([0-9a-fA-F-]{36})\]",
+        r"[chunk_id: \1]",
+        answer,
+    )
+
+
 def verify_answer_citations(
     answer: str,
     retrieved_chunks: list[dict[str, Any]],
 ) -> dict:
+    """
+    Verifies that every cited chunk_id exists in retrieved_chunks.
+
+    This prevents fake citations like:
+    [chunk_id: made-up-id]
+
+    It only accepts citations that came from the retrieval set.
+    """
+
     cited_chunk_ids = extract_cited_chunk_ids(answer)
 
     retrieved_by_id = {

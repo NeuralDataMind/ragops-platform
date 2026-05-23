@@ -1,0 +1,32 @@
+[
+  {
+    "id": "q1",
+    "question": "What happens in the first 5 minutes of the interview?",
+    "expected_chunk_indexes": [1],
+    "description": "Should retrieve the Warmup 0-5 min chunk"
+  },
+  {
+    "id": "q2",
+    "question": "What should I prepare before joining the call?",
+    "expected_chunk_indexes": [0],
+    "description": "Should retrieve the before joining call preparation chunk"
+  },
+  {
+    "id": "q3",
+    "question": "What happens during the project walkthrough?",
+    "expected_chunk_indexes": [1, 2],
+    "description": "Should retrieve chunks around project walkthrough and repo explanation"
+  },
+  {
+    "id": "q4",
+    "question": "What happens during the decision deep dive?",
+    "expected_chunk_indexes": [3, 4],
+    "description": "Should retrieve decision deep dive chunks"
+  },
+  {
+    "id": "q5",
+    "question": "What should I ask at the end of the interview?",
+    "expected_chunk_indexes": [6],
+    "description": "Should retrieve reverse questions and closing chunk"
+  }
+]

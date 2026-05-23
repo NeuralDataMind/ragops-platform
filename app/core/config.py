@@ -38,6 +38,10 @@ class Settings(BaseSettings):
     MAX_UPLOAD_MB: int = 20
     UPLOAD_DIR: str = "uploads"
 
+    EVAL_DOCUMENT_ID: str | None = None
+
+    MIN_HYBRID_SCORE: float = 0.45
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
